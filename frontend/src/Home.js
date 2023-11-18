@@ -5,13 +5,15 @@ import avtar from './images/avtar.png'
 import {GoHomeFill} from 'react-icons/go'
 import Header from './Header'
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
-function VideoGrid(){
+function VideoGrid(props){
+    const video = props.video;
     return (
         <div class="thumbnail">
             <div class="video">
-                <Link to={'/video'}>
-                    <img src={kalank} />
+                <Link to={`/video?id=${video.videoId}`}>
+                    <img class="thumbnail-img" src={video.thumbnail} />
                 </Link>
             </div>
             <div class="video-title">
@@ -19,9 +21,9 @@ function VideoGrid(){
                     <img src={avtar} height={'30px'} width={'30px'}></img>
                 </div>
                 <div class="video-info">
-                    <h4 class="track-title margin-0">Kalank Title Track - Lyrical | Alia Bhatt</h4>
+                    <h4 class="track-title margin-0">{video.title}</h4>
                     <p class="margin-0 smaller-fontsize">T-Series</p>
-                    <p class="margin-0 smaller-fontsize">230M views . 4 years ago</p>
+                    <p class="margin-0 smaller-fontsize">{video.views} views . 4 years ago</p>
                 </div>
             </div>
             
@@ -42,7 +44,27 @@ function VideoGrid(){
 }
 
 function Home(){
-    let videos = [1, 2, 3, 4, 5 , 6, 7, 8, 9, 10, 11, 12]
+    // let videos = [1, 2, 3, 4, 5 , 6, 7, 8, 9, 10, 11, 12]
+    const [videos, setVideos] = useState([]);
+
+    const url = "http://localhost:5500/videos"
+
+    const getVideos = async() => {
+        try{
+            const response = await fetch(url);
+            const json = await response.json();
+            console.log(json);
+            setVideos(json.videos);
+
+        }catch(error){
+            console.log("Error", error)
+        }
+    };
+
+    useEffect(() => {
+        getVideos();
+    }, [])
+
     return (
         <div>
             <Header />
@@ -71,7 +93,7 @@ function Home(){
                 <div class="main-right">
                     
                         {videos.map((video) => {
-                            return <VideoGrid />
+                            return <VideoGrid video={video} />
                         })}
                     
                 </div>

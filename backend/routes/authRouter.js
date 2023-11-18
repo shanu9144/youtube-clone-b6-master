@@ -2,7 +2,8 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const authRouter = express.Router();
 
-const User = require('../models/users.js')
+const User = require('../models/users.js');
+const { createToken } = require('../utils/jwt.js');
 
 // signup
 authRouter.post('/auth/signup', signUp);
@@ -20,7 +21,7 @@ async function signUp(req, res){
         );
 
         const user = new User(req.body);
-        const response =  await user.save();
+        const response = await user.save();
 
         console.log("User registered");
         res.send({
@@ -38,19 +39,34 @@ async function signUp(req, res){
     }
 }
 
- async function login(req, res){
+async function login(req, res){
     console.log("Login:", req.body);
-    try {
-        const user = await User.findone({email:req.body.email});
-        if(user){
+    try{
+        const user = await User.findOne({email: req.body.email});
+        if(user) {
             const validPassword = await bcrypt.compare(
-                req.body.password. user.hashedPassword);
-            if(validPassword)
+                req.body.password, user.hashedPassword);
+            if(validPassword){
+                res.send({
+                    _id: user._id, 
+                    email: user.email,
+                    name: user.name,
+                    token: createToken(user),
+                    success: true
+                })
+            } else{
+                throw new Error('Invalid password');
+            }
+        } else {
+            throw new Error('Invalid Email');
         }
-    } catch (error) {
-        
+    }catch(error){
+        console.log(error.code, error.message);
+        res.send({
+            success: false,
+            message: error.message
+        })
     }
-
 }
 
 
